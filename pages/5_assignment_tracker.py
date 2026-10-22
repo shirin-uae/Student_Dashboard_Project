@@ -1,4 +1,5 @@
 import streamlit as st
+import uuid
 from datetime import date, timedelta
 
 
@@ -299,6 +300,7 @@ with st.container(border=True):
         else:
 
             new_assignment = {
+                "id": uuid.uuid4().hex,
                 "title": title.strip(),
                 "subject": subject,
                 "due_date": due_date,
@@ -509,7 +511,7 @@ else:
                         "Status",
                         ["Not Started", "In Progress", "Completed"],
                         index=["Not Started", "In Progress", "Completed"].index(status),
-                        key=f"status_{index}"
+                        key=f"status_{assignment['id']}"
                     )
 
                     if new_status != status:
@@ -517,23 +519,26 @@ else:
                         if new_status == "Completed":
                             completed_now = complete_assignment(index)
                             if completed_now:
-                                st.success("🎉 +30 XP")
+                                st.toast("🎉 +30 XP")
                         else:
                             assignment["status"] = new_status
-                        
+
+                        st.rerun()
 
                 else:
                     st.success("Completed ✓")
 
                 if st.button(
                     "🗑️ Delete",
-                    key=f"delete_{index}",
+                    key=f"delete_{assignment['id']}",
                     use_container_width=True
                 ):
 
                     st.session_state.assignments.pop(
                         index
                     )
+
+                    st.rerun()
 
 
 # =========================================================

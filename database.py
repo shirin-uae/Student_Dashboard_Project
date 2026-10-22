@@ -11,7 +11,7 @@ DATABASE_NAME = "ai_student_dashboard"
 
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
 MYSQL_USER = os.getenv("MYSQL_USER", "root")
-DEFAULT_PASSWORD = "YOUR_MYSQL_PASSWORD"          # <-- change this
+DEFAULT_PASSWORD = ""
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", DEFAULT_PASSWORD)
 
 

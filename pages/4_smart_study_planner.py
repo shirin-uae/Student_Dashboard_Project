@@ -56,6 +56,23 @@ def to_time(value, default=time(7, 0)):
     return default
 
 
+def format_datetime(value, pattern="%Y-%m-%d %H:%M"):
+    if value is None:
+        return ""
+
+    return value.strftime(pattern)
+
+
+def parse_datetime(value, pattern, default):
+    if not value:
+        return default
+
+    try:
+        return datetime.strptime(value, pattern)
+    except (TypeError, ValueError):
+        return default
+
+
 def run_query(sql, params=(), dictionary=False, fetch=False):
     conn = get_connection()
     cursor = conn.cursor(dictionary=dictionary)
@@ -179,7 +196,7 @@ def load_tasks():
             "Priority": r["priority"],
             "Deadline": r["deadline"],
             "StudyDate": r["study_date"],
-            "Added On": r["added_on"].strftime("%Y-%m-%d %H:%M"),
+            "Added On": format_datetime(r["added_on"]),
             "Completed": bool(r["completed"])
         }
         for r in rows
@@ -250,9 +267,10 @@ def delete_task(task, row):
             task["Priority"],
             task["Deadline"],
             task["StudyDate"],
-            datetime.strptime(
+            parse_datetime(
                 task["Added On"],
-                "%Y-%m-%d %H:%M"
+                "%Y-%m-%d %H:%M",
+                datetime.now()
             ),
             datetime.strptime(
                 row["Date"],
@@ -309,18 +327,18 @@ def load_deleted():
             "Priority": r["priority"],
             "Deadline": r["deadline"],
             "StudyDate": r["study_date"],
-            "Added On": r["added_on"].strftime("%Y-%m-%d %H:%M"),
+            "Added On": format_datetime(r["added_on"]),
             "Completed": False
         }
 
         row = {
             "ID": f"{r['subject']} - {r['topic']}_{r['id']}",
             "Name": f"{r['subject']} - {r['topic']}",
-            "Date": r["row_date"].strftime("%Y-%m-%d"),
+            "Date": format_datetime(r["row_date"], "%Y-%m-%d"),
             "Start": r["start_time"],
             "End": r["end_time"],
             "Duration": r["row_duration"],
-            "Deadline": r["row_deadline"].strftime("%Y-%m-%d")
+            "Deadline": format_datetime(r["row_deadline"], "%Y-%m-%d")
         }
 
         result.append({
@@ -346,11 +364,15 @@ def restore_task(record):
             STUDENT_ID,
             task["Subject"],
             task["Topic"],
-            task["Duration"],
-            task["Priority"],
-            task["Deadline"],
-            task["StudyDate"],
-            datetime.strptime(task["Added On"], "%Y-%m-%d %H:%M")
+            task["Duration"] or 30,
+            task["Priority"] or "Medium",
+            task["Deadline"] or datetime.today().date(),
+            task["StudyDate"] or datetime.today().date(),
+            parse_datetime(
+                task["Added On"],
+                "%Y-%m-%d %H:%M",
+                datetime.now()
+            )
         )
     )
 
